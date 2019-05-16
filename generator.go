@@ -19,7 +19,7 @@
 // OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-package uuid
+package guuid
 
 import (
 	"crypto/md5"
@@ -81,6 +81,7 @@ type Generator interface {
 	NewV3(ns UUID, name string) UUID
 	NewV4() (UUID, error)
 	NewV5(ns UUID, name string) UUID
+	NewVS() (UUID, error)
 }
 
 // Default generator implementation.
@@ -172,6 +173,18 @@ func (g *rfc4122Generator) NewV4() (UUID, error) {
 	u.SetVariant(VariantRFC4122)
 
 	return u, nil
+}
+
+// NewVS returns random generated UUID.
+func (g *rfc4122Generator) NewVS() UUID {
+	u := UUID{}
+	if _, err := io.ReadFull(g.rand, u[:]); err != nil {
+		return NewV5(u, "")
+	}
+	u.SetVersion(V4)
+	u.SetVariant(VariantRFC4122)
+
+	return u
 }
 
 // NewV5 returns UUID based on SHA-1 hash of namespace UUID and name.
